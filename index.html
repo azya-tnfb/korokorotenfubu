@@ -119,34 +119,34 @@
         <!-- デバッグ用グリッド (全体基準に戻す・初期OFF) -->
         <div id="debug-grid" class="hidden"></div>
 
-        <!-- UI Layer: SCORE & NEXT (左側: 100,100) -->
-        <div id="ui-layer">
-            <div id="score-container">
-                <div class="score-label">SCORE</div>
-                <div id="score-display">0</div>
-            </div>
-            <div id="next-fruit-display">
-                <span>Next:</span>
-                <div id="next-fruit-preview"></div>
-            </div>
-        </div>
-
         <div id="canvas-wrapper">
             <!-- Canvas will be injected here by Matter.js -->
         </div>
 
-        <!-- 進化ルート (右側: 1100, 250) -->
-        <div id="evolution-container">
-            <h3>進化ルート</h3>
-            <div id="evolution-list"></div>
-        </div>
-
-        <!-- 設定ボタン（歯車）(右側: 1250, 100) -->
-        <button id="settings-btn" class="icon-btn">⚙️</button>
-
         <!-- カウントダウン表示 -->
         <div id="countdown-display" class="hidden">3</div>
     </div>
+
+    <!-- UI Layer: SCORE & NEXT (左側) - game-containerの外に出して常に表示 -->
+    <div id="ui-layer" class="hidden">
+        <div id="score-container">
+            <div class="score-label">SCORE</div>
+            <div id="score-display">0</div>
+        </div>
+        <div id="next-fruit-display">
+            <span>Next:</span>
+            <div id="next-fruit-preview"></div>
+        </div>
+    </div>
+
+    <!-- 進化ルート (右側) -->
+    <div id="evolution-container" class="hidden">
+        <h3>進化ルート</h3>
+        <div id="evolution-list"></div>
+    </div>
+
+    <!-- 設定ボタン（歯車）(右上) -->
+    <button id="settings-btn" class="icon-btn hidden">⚙️</button>
 
     <!-- ポーズメニュー（設定画面） -->
     <div id="pause-menu" class="hidden">

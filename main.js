@@ -126,6 +126,8 @@ document.getElementById('start-btn').addEventListener('click', () => {
     titleMenuScreen.classList.add('hidden');
     gameContainer.classList.remove('hidden');
     document.getElementById('ui-layer').classList.remove('hidden');
+    document.getElementById('evolution-container').classList.remove('hidden');
+    document.getElementById('settings-btn').classList.remove('hidden');
 
     spawnCurrentFruit();
 });
@@ -236,6 +238,8 @@ document.getElementById('pause-title-btn').addEventListener('click', () => {
     // タイトル画面に戻る
     gameContainer.classList.add('hidden');
     document.getElementById('ui-layer').classList.add('hidden');
+    document.getElementById('evolution-container').classList.add('hidden');
+    document.getElementById('settings-btn').classList.add('hidden');
     titleMenuScreen.classList.remove('hidden');
 });
 
@@ -826,6 +830,8 @@ document.getElementById('back-to-title-btn').addEventListener('click', () => {
     gameOverScreen.classList.add('hidden');
     gameContainer.classList.add('hidden');
     uiLayer.classList.add('hidden');
+    document.getElementById('evolution-container').classList.add('hidden');
+    document.getElementById('settings-btn').classList.add('hidden');
     titleMenuScreen.classList.remove('hidden');
 
     // ゲームをリセット

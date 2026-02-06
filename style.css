@@ -37,17 +37,17 @@ body {
 #canvas-wrapper {
     position: relative;
     width: 380px;
-    /* Match GAME_SETTINGS.WIDTH */
     height: 500px;
-    /* Match GAME_SETTINGS.HEIGHT */
     background-image: url('assets/bg/bg01.png');
-    background-size: cover;
+    background-size: 100% 100%;
+    /* cover -> 100% 100% で正確に合わせる */
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 8px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     touch-action: none;
-    /* スマホでのスクロール防止 */
+    overflow: hidden;
+    /* 背景がはみ出さないように */
 }
 
 canvas {
