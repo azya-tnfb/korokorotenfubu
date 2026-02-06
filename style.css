@@ -11,7 +11,7 @@ body {
     padding: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-image: url('assets/bg/bg2.png');
-    background-size: 100% 100%;
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -21,7 +21,7 @@ body {
     align-items: center;
     height: 100vh;
     overflow: auto;
-    /* hidden -> auto: 画面外のUIが見えるようにスクロール可能に */
+    /* hidden -> auto */
 }
 
 #game-container {
@@ -36,18 +36,16 @@ body {
 
 #canvas-wrapper {
     position: relative;
-    width: 380px;
+    width: 333px;
+    /* Match GAME_SETTINGS.WIDTH */
     height: 500px;
+    /* Match GAME_SETTINGS.HEIGHT */
     background-image: url('assets/bg/bg01.png');
-    background-size: 100% 100%;
-    /* cover -> 100% 100% で正確に合わせる */
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 8px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    touch-action: none;
-    overflow: hidden;
-    /* 背景がはみ出さないように */
 }
 
 canvas {
@@ -61,16 +59,14 @@ canvas {
 #ui-layer {
     position: fixed;
     top: 15%;
-    /* 画像のSCORE位置に合わせる */
     left: 8%;
+    right: auto;
+    /* Reset previous styles */
     pointer-events: none;
     z-index: 2500;
-    /* 100 -> 2500: タイトル画面(1000)より上、オーバーレイ(3000)より下 */
     display: flex;
     flex-direction: column;
-    /* 縦並び */
     gap: 10px;
-    /* JSで動的に位置調整される */
 }
 
 /* ポーズメニュー & オプション画面共通のかわいいスタイル */
@@ -160,7 +156,7 @@ input[type=range] {
 }
 
 #next-fruit-display {
-    margin-top: 10px;
+    margin-top: 20px;
     background: var(--ui-bg);
     padding: 10px;
     border-radius: 8px;
@@ -168,6 +164,19 @@ input[type=range] {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: absolute;
+    top: 50px;
+    /* Separate Next from Score */
+    right: 20px;
+    /* Align within its container */
+}
+
+.next-label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    margin-bottom: 5px;
 }
 
 #next-fruit-preview {
@@ -183,19 +192,14 @@ input[type=range] {
 #evolution-container {
     position: fixed;
     top: 50%;
-    /* 垂直中央 */
     right: 5%;
-    /* 右端から5% */
     left: auto;
-    /* fixed解除 */
     transform: translateY(-50%);
-    /* 垂直方向のみ中央寄せ */
     background: rgba(135, 206, 235, 0.7);
     border-radius: 50%;
     backdrop-filter: blur(5px);
     color: #fff;
     width: 260px;
-    /* 元のサイズに戻す (大きくて見やすいように) */
     height: 260px;
     pointer-events: auto;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -203,7 +207,6 @@ input[type=range] {
     justify-content: center;
     align-items: center;
     z-index: 2500;
-    /* 100 -> 2500 */
 }
 
 #evolution-container h3 {
@@ -213,7 +216,6 @@ input[type=range] {
     transform: translate(-50%, -50%);
     margin: 0;
     font-size: 14px;
-    /* 元のサイズ */
     font-weight: bold;
     color: #fff;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
@@ -637,55 +639,40 @@ button:active {
 
 /* スコア表示の改善 */
 #score-container {
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 30px;
-    padding: 5px 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 100px;
-    /* 幅確保 */
+    background: rgba(135, 206, 235, 0.6);
+    /* スカイブルー、進化ルートと同じ */
+    padding: 10px 20px;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+    position: fixed;
+    top: 5%;
+    left: 3%;
+    z-index: 2500;
 }
 
 .score-label {
-    font-size: 12px;
-    color: #ff6b6b;
+    font-size: 1rem;
+    font-weight: normal;
+    color: #ffffff;
     font-weight: bold;
-    text-shadow: none;
-    /* 影なしで見やすく */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    margin-bottom: 5px;
 }
 
 #score-display {
-    font-size: 24px;
+    font-size: 2.5rem;
     font-weight: bold;
-    color: #333;
-    text-shadow: none;
+    color: var(--text-color);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* NEXTアイコンを大きく */
-#next-fruit-display {
-    display: flex;
-    flex-direction: column;
-    /* 文字の下にアイコン */
-    align-items: center;
-    background: rgba(255, 255, 255, 0.8);
-    /* 背景追加して見やすく */
-    border-radius: 15px;
-    padding: 10px;
-}
-
-#next-fruit-display span {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: black;
-    /* User Request: 文字色黒 */
-    text-shadow: none;
-}
-
 #next-fruit-preview {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -697,20 +684,20 @@ button:active {
     object-fit: contain;
 }
 
+/* 設定ボタン（歯車） */
 /* 設定ボタン（歯車） - 画像の右上に配置 */
 #settings-btn {
     position: fixed;
     top: 5%;
     right: 3%;
     left: auto;
+    bottom: auto;
     width: 50px;
-    /* 少し大きく */
     height: 50px;
     padding: 0;
     border-radius: 50%;
     font-size: 20px;
     z-index: 2500;
-    /* 100 -> 2500 */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -719,7 +706,6 @@ button:active {
     border: 1px solid rgba(255, 255, 255, 0.3);
     pointer-events: auto;
     cursor: pointer;
-    /* JSで動的に位置調整される */
 }
 
 #settings-btn:hover {
@@ -1114,45 +1100,4 @@ button:active {
     color: #aaa;
     font-size: 0.9rem;
     font-style: italic;
-}
-
-/* デバッグ用グリッド (全体基準) */
-#debug-grid {
-    position: fixed;
-    /* fixedでウィンドウ全体基準 */
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 999;
-    background-image:
-        linear-gradient(cyan 1px, transparent 1px),
-        linear-gradient(90deg, cyan 1px, transparent 1px),
-        linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
-    background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px;
-}
-
-#debug-grid::after {
-    content: "Grid: 50px / 10px (Toggle: G)";
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    color: cyan;
-    font-weight: bold;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 2px 5px;
-    font-size: 16px;
-    border: 1px solid cyan;
-}
-
-.grid-label {
-    position: absolute;
-    color: cyan;
-    font-size: 10px;
-    transform: translate(2px, 2px);
-    /* 線とかぶらないように少しずらす */
-    pointer-events: none;
-    text-shadow: 1px 1px 0 #000;
 }

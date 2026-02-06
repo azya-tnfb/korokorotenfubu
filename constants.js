@@ -120,7 +120,7 @@ export const PHYSICS_SETTINGS = {
 };
 
 export const GAME_SETTINGS = {
-    WIDTH: 380,          // 箱の幅（本家比率に近づける調整）
+    WIDTH: 333,          // 箱の幅（2:3のアスペクト比、高さ500に対応）
     HEIGHT: 500,         // 箱の高さ
     WALL_THICKNESS: 10,  // 壁の厚さ
     BASE_RADIUS_SCALE: 15, // 1.0 radius = 15px（箱サイズに合わせて調整）
