@@ -1,4 +1,8 @@
-import { FRUITS, PHYSICS_SETTINGS, GAME_SETTINGS } from './constants.js';
+import { FRUITS as DEFAULT_FRUITS, PHYSICS_SETTINGS, GAME_SETTINGS } from './constants.js';
+import { initCustomize, openCustomize, getCustomFruits } from './customize.js';
+
+// カスタマイズされたFRUITS配列を使用
+let FRUITS = getCustomFruits();
 
 // Matter.js 
 const Engine = Matter.Engine,
@@ -27,6 +31,229 @@ const nextFruitPreview = document.getElementById('next-fruit-preview');
 const gameOverScreen = document.getElementById('game-over-screen');
 const restartBtn = document.getElementById('restart-btn');
 const uiLayer = document.getElementById('ui-layer');
+const countdownEl = document.getElementById('countdown-display'); // 追加
+
+// Screen Elements
+const titleMenuScreen = document.getElementById('title-menu-screen'); // ID修正
+const optionsScreen = document.getElementById('options-screen');
+const highscoreScreen = document.getElementById('highscore-screen');
+const gameContainer = document.getElementById('game-container');
+
+// Settings Elements
+const settingsBtn = document.getElementById('settings-btn');
+const pauseMenu = document.getElementById('pause-menu');
+const pauseRetryBtn = document.getElementById('pause-retry-btn');
+const pauseCloseBtn = document.getElementById('pause-close-btn');
+const pauseBgmSlider = document.getElementById('pause-bgm-volume');
+const pauseSeSlider = document.getElementById('pause-se-volume');
+
+// Audio Elements
+const bgm = new Audio('assets/audio/bgm/Hmm.-Tasty.wav');
+bgm.loop = true;
+bgm.volume = 0.3; // BGMは控えめに
+
+const seRelease = new Audio('assets/audio/se/release.mp3');
+seRelease.volume = 0.5;
+
+const seShinka = new Audio('assets/audio/se/shinka.mp3');
+seShinka.volume = 0.6;
+
+// BGM自動再生（ユーザー操作後に開始）
+let bgmStarted = false;
+function startBGM() {
+    if (!bgmStarted) {
+        bgm.play().catch(e => console.log('BGM autoplay prevented:', e));
+        bgmStarted = true;
+    }
+}
+
+// ハイスコア管理
+let highScore = parseInt(localStorage.getItem('highScore') || '0');
+
+// ランキング管理（上位3位）
+// ランキング管理（上位3位）
+function getRankings() {
+    try {
+        const rankings = localStorage.getItem('rankings');
+        if (rankings) {
+            let parsed = JSON.parse(rankings);
+            if (Array.isArray(parsed)) {
+                // 数値に変換し、不正な値は0にする
+                parsed = parsed.map(v => {
+                    const n = Number(v);
+                    return isNaN(n) ? 0 : n;
+                });
+                // 長さが3未満なら0で埋める
+                while (parsed.length < 3) parsed.push(0);
+                return parsed.slice(0, 3);
+            }
+        }
+    } catch (e) {
+        console.error('Error parsing rankings:', e);
+    }
+    return [0, 0, 0]; // デフォルト
+}
+
+function updateRankings(newScore) {
+    let rankings = getRankings();
+    rankings.push(Number(newScore));
+    rankings.sort((a, b) => b - a); // 降順ソート
+    rankings = rankings.slice(0, 3); // 上位3位のみ保持
+    localStorage.setItem('rankings', JSON.stringify(rankings));
+
+    // ハイスコアも更新 (ランキングの1位がハイスコアになるはずだが、念のため既存ロジックも維持)
+    if (rankings[0] > highScore) {
+        highScore = rankings[0];
+        localStorage.setItem('highScore', highScore.toString());
+    }
+
+    return rankings;
+}
+
+// ゲームオーバー判定用タイマー
+let gameOverTimer = null;
+let gameOverTimerStart = null;
+
+// タイトル画面の制御
+document.getElementById('start-btn').addEventListener('click', () => {
+    // カスタマイズされたFRUITSを再読み込み
+    FRUITS = getCustomFruits();
+    // 進化ルートを更新
+    initEvolutionChart();
+    // 画像を再読み込み (サイズ計算のため)
+    preloadImages();
+
+    titleMenuScreen.classList.add('hidden');
+    gameContainer.classList.remove('hidden');
+    document.getElementById('ui-layer').classList.remove('hidden');
+
+    spawnCurrentFruit();
+});
+
+// ... (中略) ...
+
+// スプラッシュスクリーンの制御
+document.getElementById('splash-screen').addEventListener('click', () => {
+    document.getElementById('splash-screen').classList.add('hidden');
+    document.getElementById('title-menu-screen').classList.remove('hidden');
+    startBGM(); // ここで開始
+});
+
+// ハイスコアボタン（タイトル）
+document.getElementById('highscore-btn').addEventListener('click', () => {
+    const rankings = getRankings();
+    console.log('Current Rankings:', rankings); // デバッグログ
+
+    // ハイスコア（1位）を左側に表示
+    document.getElementById('menu-highscore').textContent = rankings[0];
+    // 右側にランキング1〜3位を表示
+    document.getElementById('menu-rank-1').textContent = rankings[0];
+    document.getElementById('menu-rank-2').textContent = rankings[1];
+    document.getElementById('menu-rank-3').textContent = rankings[2];
+    highscoreScreen.classList.remove('hidden');
+});
+
+// オプションボタン（タイトル）
+document.getElementById('options-btn').addEventListener('click', () => {
+    optionsScreen.classList.remove('hidden');
+});
+
+// 戻るボタン（ハイスコア）
+document.getElementById('highscore-back-btn').addEventListener('click', () => {
+    highscoreScreen.classList.add('hidden');
+});
+
+// 戻るボタン（オプション）
+document.getElementById('options-back-btn').addEventListener('click', () => {
+    optionsScreen.classList.add('hidden');
+});
+
+// カスタマイズボタン
+document.getElementById('customize-btn').addEventListener('click', () => {
+    openCustomize();
+});
+
+// 対戦ボタン（未実装）
+document.getElementById('battle-btn').addEventListener('click', () => {
+    alert('対戦機能は現在開発中です！');
+});
+
+// カスタマイズ機能の初期化
+initCustomize();
+
+// タイトル画面の音量スライダー
+const titleBgmSlider = document.getElementById('title-bgm-volume');
+const titleSeSlider = document.getElementById('title-se-volume');
+
+if (titleBgmSlider) {
+    titleBgmSlider.addEventListener('input', (e) => {
+        bgm.volume = e.target.value / 100;
+        // ポーズメニューのスライダーも同期
+        if (pauseBgmSlider) pauseBgmSlider.value = e.target.value;
+    });
+}
+
+if (titleSeSlider) {
+    titleSeSlider.addEventListener('input', (e) => {
+        const val = e.target.value / 100;
+        seRelease.volume = val;
+        seShinka.volume = val;
+        // ポーズメニューのスライダーも同期
+        if (pauseSeSlider) pauseSeSlider.value = e.target.value;
+    });
+}
+
+// 設定（ポーズ）メニューの制御
+settingsBtn.addEventListener('click', () => {
+    pauseMenu.classList.remove('hidden');
+    // ゲーム一時停止（物理演算ストップ）
+    engine.enabled = false;
+    Runner.stop(runner);
+});
+
+pauseCloseBtn.addEventListener('click', () => {
+    pauseMenu.classList.add('hidden');
+    // ゲーム再開
+    engine.enabled = true;
+    Runner.run(runner, engine);
+});
+
+pauseRetryBtn.addEventListener('click', () => {
+    pauseMenu.classList.add('hidden');
+    engine.enabled = true;
+    Runner.run(runner, engine);
+    // リスタート処理呼び出し
+    resetGame();
+});
+
+// メインメニューに戻る
+document.getElementById('pause-title-btn').addEventListener('click', () => {
+    pauseMenu.classList.add('hidden');
+    engine.enabled = true;
+    Runner.run(runner, engine);
+    // ゲームをリセットして初期状態に
+    resetGame();
+    // タイトル画面に戻る
+    gameContainer.classList.add('hidden');
+    document.getElementById('ui-layer').classList.add('hidden');
+    titleMenuScreen.classList.remove('hidden');
+});
+
+// ポーズメニューの音量調整
+pauseBgmSlider.addEventListener('input', (e) => {
+    const value = e.target.value;
+    bgm.volume = value / 100;
+});
+
+pauseSeSlider.addEventListener('input', (e) => {
+    const value = e.target.value;
+    const seVolume = value / 100;
+    seRelease.volume = seVolume;
+    seShinka.volume = seVolume;
+});
+
+
+
 
 // Initialize
 const engine = Engine.create({
@@ -39,13 +266,13 @@ const world = engine.world;
 
 // Create Renderer
 const render = Render.create({
-    element: document.getElementById('game-container'),
+    element: document.getElementById('canvas-wrapper'),
     engine: engine,
     options: {
         width: GAME_SETTINGS.WIDTH,
         height: GAME_SETTINGS.HEIGHT,
         wireframes: false,
-        background: '#2d2d2d',
+        background: 'transparent',
         pixelRatio: window.devicePixelRatio
     }
 });
@@ -61,6 +288,108 @@ const rightWall = Bodies.rectangle(GAME_SETTINGS.WIDTH, GAME_SETTINGS.HEIGHT / 2
 
 Composite.add(world, [ground, leftWall, rightWall]);
 
+// Preload Images to get dimensions
+const loadedTextures = {}; // path -> { width, height, image }
+
+function preloadImages() {
+    let loadedCount = 0;
+    const totalImages = FRUITS.reduce((sum, fruit) => sum + fruit.textures.length, 0);
+
+    FRUITS.forEach(fruit => {
+        fruit.textures.forEach(path => {
+            const img = new Image();
+            img.onload = () => {
+                loadedTextures[path] = {
+                    width: img.width,
+                    height: img.height,
+                    img: img
+                };
+                loadedCount++;
+                console.log(`✓ Loaded: ${path} (${loadedCount}/${totalImages})`);
+                if (loadedCount === totalImages) {
+                    console.log('🎉 All images loaded successfully!');
+                }
+            };
+            img.onerror = (e) => {
+                console.error(`❌ Failed to load: ${path}`, e);
+            };
+            img.src = path;
+        });
+    });
+}
+preloadImages();
+
+// Initialize Evolution Chart
+// Initialize Evolution Chart
+function initEvolutionChart() {
+    const listEl = document.getElementById('evolution-list');
+    if (!listEl) return;
+
+    // 円形配置の設定
+    const radius = 105; // 半径
+    const centerX = 130; // コンテナ中心X (260/2)
+    const centerY = 130; // コンテナ中心Y (260/2)
+    const totalItems = FRUITS.length;
+    const angleStep = (2 * Math.PI) / totalItems;
+
+    // 開始角度 (-90度 = 12時の位置からスタート)
+    const startAngle = -Math.PI / 2;
+
+    FRUITS.forEach((fruit, index) => {
+        const item = document.createElement('div');
+        item.className = 'evo-item';
+
+        // 座標計算
+        const angle = startAngle + index * angleStep;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+
+        item.style.left = `${x}px`;
+        item.style.top = `${y}px`;
+
+        const img = document.createElement('img');
+        if (fruit.textures.length > 0) {
+            img.src = fruit.textures[0];
+        }
+        img.className = 'evo-img';
+        img.alt = fruit.label;
+        img.title = fruit.label;
+
+        item.appendChild(img);
+
+        // 矢印（次のアイテムへのつなぎ）
+        if (index < FRUITS.length - 1) {
+            const arrow = document.createElement('div');
+            arrow.className = 'evo-arrow';
+            arrow.textContent = '▶'; // 三角矢印
+
+            // 矢印の位置計算（現在のアイテムと次のアイテムの中間、少し内側）
+            const nextAngle = startAngle + (index + 1) * angleStep;
+            const midAngle = (angle + nextAngle) / 2;
+
+            // 矢印は少し半径小さめに配置して内周を回る感じにする、あるいは同じ半径
+            const arrowRadius = radius;
+            const ax = centerX + arrowRadius * Math.cos(midAngle);
+            const ay = centerY + arrowRadius * Math.sin(midAngle);
+
+            arrow.style.left = `${ax}px`;
+            arrow.style.top = `${ay}px`;
+
+            // 回転角度（接線方向）
+            // midAngle + 90度 (ラジアン)
+            const rotation = midAngle + Math.PI / 2;
+            arrow.style.transform = `translate(-50%, -50%) rotate(${rotation}rad)`;
+
+            listEl.appendChild(arrow);
+        }
+
+        listEl.appendChild(item);
+    });
+}
+initEvolutionChart();
+
+
+
 // Input Handling
 let currentX = GAME_SETTINGS.WIDTH / 2;
 const dropY = 50; // Height where fruit spawns
@@ -70,6 +399,25 @@ function createFruitBody(x, y, idx, isStatic = false) {
     const fruit = FRUITS[idx];
     const radius = fruit.radius * GAME_SETTINGS.BASE_RADIUS_SCALE;
 
+    // Choose random texture from 2 options
+    const texturePath = fruit.textures[Math.floor(Math.random() * fruit.textures.length)];
+
+    // Calculate sprite scale
+    let xScale = 1, yScale = 1;
+    if (loadedTextures[texturePath]) {
+        // Target diameter / Image width
+        const targetSize = radius * 2;
+        xScale = targetSize / loadedTextures[texturePath].width;
+        yScale = targetSize / loadedTextures[texturePath].height;
+        console.log(`Creating ${fruit.label}: radius=${radius.toFixed(1)}px, texture=${texturePath}, scale=${xScale.toFixed(3)}`);
+    } else {
+        // Fallback: assume 512px image
+        const targetSize = radius * 2;
+        xScale = targetSize / 512;
+        yScale = targetSize / 512;
+        console.warn(`⚠️ Texture not loaded yet for ${fruit.label}: ${texturePath}, using fallback scale`);
+    }
+
     return Bodies.circle(x, y, radius, {
         isStatic: isStatic,
         label: `fruit_${idx}`,
@@ -77,9 +425,11 @@ function createFruitBody(x, y, idx, isStatic = false) {
         restitution: PHYSICS_SETTINGS.RESTITUTION,
         slop: PHYSICS_SETTINGS.SLOP,
         render: {
-            fillStyle: fruit.color,
-            strokeStyle: '#fff',
-            lineWidth: 2
+            sprite: {
+                texture: texturePath,
+                xScale: xScale,
+                yScale: yScale
+            }
         },
         plugin: {
             born: Date.now() // Custom property to track age
@@ -92,16 +442,25 @@ function updateNextFruit() {
     state.nextFruitIdx = Math.floor(Math.random() * 5); // Tsubumaru to Chori (0-4) typically
     // Update UI Preview
     const fruit = FRUITS[state.nextFruitIdx];
-    nextFruitPreview.style.backgroundColor = fruit.color;
-    nextFruitPreview.style.borderRadius = '50%';
-    nextFruitPreview.style.width = `${fruit.radius * 10}px`; // Scaled for UI
-    nextFruitPreview.style.height = `${fruit.radius * 10}px`;
-    nextFruitPreview.textContent = state.nextFruitIdx + 1; // Just a number for ID
-    nextFruitPreview.style.color = '#fff';
-    nextFruitPreview.style.display = 'flex';
-    nextFruitPreview.style.justifyContent = 'center';
-    nextFruitPreview.style.alignItems = 'center';
-    nextFruitPreview.style.fontSize = '12px';
+    // Use first texture for preview or random? Random might be confusing if it drops different one.
+    // Let's use random but store it? Or just first one.
+    // Ideally we decide the variant when we decide the next fruit index.
+    // But 'state' only stores index.
+    // Let's just use the first texture for preview to stay simple, or random.
+    const previewTexture = fruit.textures[0];
+
+    // Clear previous styles/content
+    nextFruitPreview.style.backgroundColor = 'transparent';
+    nextFruitPreview.textContent = '';
+
+    // Create or update img element
+    let img = nextFruitPreview.querySelector('img');
+    if (!img) {
+        img = document.createElement('img');
+        nextFruitPreview.appendChild(img);
+    }
+    img.src = previewTexture;
+    // サイズはCSSで制御
 }
 
 function spawnCurrentFruit() {
@@ -134,9 +493,16 @@ container.addEventListener('click', (e) => {
 });
 
 function dropFruit() {
+    // BGMを開始（初回クリック時）
+    startBGM();
+
     state.isDropping = true;
     const body = createFruitBody(currentX, dropY, state.currFruitIdx);
     Composite.add(world, body);
+
+    // ボールを離したときのSE
+    seRelease.currentTime = 0; // 再生位置をリセット
+    seRelease.play().catch(e => console.log('SE play failed:', e));
 
     // Slight cooldown
     setTimeout(() => {
@@ -182,6 +548,10 @@ function handleMerge(bodyA, bodyB, currentIdx) {
     const newIdx = currentIdx + 1;
     const newBody = createFruitBody(midX, midY, newIdx);
 
+    // 進化時のSE
+    seShinka.currentTime = 0;
+    seShinka.play().catch(e => console.log('Shinka SE play failed:', e));
+
     // Momentum Cancellation & Pop Effect
     // "Pop": Apply force to neighbors?
     // Matter.js doesn't have "blast" built-in, but creating a body that expands rapidly is one way, 
@@ -214,10 +584,13 @@ function handleMerge(bodyA, bodyB, currentIdx) {
 
 // Game Over Check
 // Logic: Check if any fruit is above the line, stable, for X seconds.
+// Game Over Check
+// Logic: Check if any fruit is above the line, stable, for X seconds.
 Events.on(engine, 'afterUpdate', () => {
-    if (state.gameOver) return;
+    if (state.gameOver || state.isExploding) return;
 
-    let danger = false;
+    let maxDuration = 0;
+    let anyDanger = false;
     const bodies = Composite.allBodies(world);
 
     for (const body of bodies) {
@@ -230,11 +603,13 @@ Events.on(engine, 'afterUpdate', () => {
             if (body.position.y - body.circleRadius < GAME_SETTINGS.GAME_OVER_LINE_Y) {
                 // Check velocity (is almost static?)
                 if (body.speed < 0.2) {
-                    danger = true;
+                    anyDanger = true;
                     if (!body.dangerTimer) {
                         body.dangerTimer = Date.now();
-                    } else if (Date.now() - body.dangerTimer > GAME_SETTINGS.GAME_OVER_DURATION_MS) {
-                        triggerGameOver();
+                    }
+                    const duration = Date.now() - body.dangerTimer;
+                    if (duration > maxDuration) {
+                        maxDuration = duration;
                     }
                 } else {
                     body.dangerTimer = null;
@@ -244,20 +619,62 @@ Events.on(engine, 'afterUpdate', () => {
             }
         }
     }
+
+    // カウントダウン表示処理
+    if (anyDanger) {
+        const remaining = GAME_SETTINGS.GAME_OVER_DURATION_MS - maxDuration;
+
+        if (remaining <= 0) {
+            // ゲームオーバー確定：爆発演出
+            state.isExploding = true;
+            countdownEl.textContent = 'BOOM!';
+            countdownEl.classList.remove('hidden');
+            countdownEl.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            countdownEl.style.color = '#ff0000';
+
+            // 少し待ってからリザルト画面へ
+            setTimeout(() => {
+                triggerGameOver();
+                countdownEl.classList.add('hidden');
+                // スタイルリセット
+                countdownEl.style.transform = '';
+                countdownEl.style.color = '';
+            }, 800);
+        } else {
+            // カウントダウン
+            const seconds = Math.ceil(remaining / 1000);
+            countdownEl.textContent = seconds;
+            countdownEl.classList.remove('hidden');
+            countdownEl.style.color = seconds === 1 ? '#ff0000' : '#FF4757'; // 1秒前は赤く
+        }
+    } else {
+        countdownEl.classList.add('hidden');
+    }
 });
 
 function triggerGameOver() {
     state.gameOver = true;
     gameOverScreen.classList.remove('hidden');
-    engine.enabled = false; // Stop physics? Or just stop input.
-    // Usually Stop physics to freeze the scene
+    engine.enabled = false;
     Runner.stop(runner);
+
+    // BGMは停止しない
+
+    // ランキング更新
+    const rankings = updateRankings(state.score);
+    console.log('Game Over - Rankings:', rankings);
+
+    // UI更新
+    document.getElementById('current-score-display').textContent = state.score;
+
+    document.getElementById('rank-1').textContent = rankings[0];
+    document.getElementById('rank-2').textContent = rankings[1];
+    document.getElementById('rank-3').textContent = rankings[2];
 }
 
-restartBtn.addEventListener('click', () => {
+function resetGame() {
     // Reset
-    Composite.clear(world, false, true); // Keep static? No, clear all non-static
-    // Actually simpler to clear everything and rebuild walls
+    Composite.clear(world, false, true);
     Composite.clear(world);
     Composite.add(world, [
         Bodies.rectangle(GAME_SETTINGS.WIDTH / 2, GAME_SETTINGS.HEIGHT, GAME_SETTINGS.WIDTH, GAME_SETTINGS.WALL_THICKNESS, wallOptions),
@@ -268,12 +685,40 @@ restartBtn.addEventListener('click', () => {
     state.score = 0;
     scoreEl.textContent = '0';
     state.gameOver = false;
+    state.isExploding = false; // reset
     gameOverScreen.classList.add('hidden');
+    countdownEl.classList.add('hidden'); // Ensure countdown is hidden
+
+    engine.enabled = true;
+    Runner.stop(runner);
     Runner.start(runner, engine);
+
+    // BGMを再開
+    if (bgmStarted) {
+        bgm.currentTime = 0;
+        bgm.play().catch(e => console.log('BGM restart failed:', e));
+    }
 
     // Initial spawn
     state.nextFruitIdx = 0;
     spawnCurrentFruit();
+}
+
+restartBtn.addEventListener('click', resetGame);
+
+// タイトルに戻るボタン
+document.getElementById('back-to-title-btn').addEventListener('click', () => {
+    gameOverScreen.classList.add('hidden');
+    gameContainer.classList.add('hidden');
+    uiLayer.classList.add('hidden');
+    titleMenuScreen.classList.remove('hidden');
+
+    // ゲームをリセット
+    resetGame();
+
+    // BGMを停止
+    bgm.pause();
+    bgm.currentTime = 0;
 });
 
 // Custom Rendering (lines, guide)
@@ -294,14 +739,25 @@ Events.on(render, 'afterRender', () => {
     if (!state.isDropping && !state.gameOver) {
         const fruit = FRUITS[state.currFruitIdx];
         const radius = fruit.radius * GAME_SETTINGS.BASE_RADIUS_SCALE;
-        ctx.beginPath();
-        ctx.arc(currentX, dropY, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = fruit.color;
-        ctx.globalAlpha = 0.5;
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-        ctx.strokeStyle = '#fff';
-        ctx.stroke();
+
+        // Use first texture for guide
+        const texture = loadedTextures[fruit.textures[0]];
+
+        if (texture && texture.img) {
+            ctx.save();
+            ctx.globalAlpha = 0.5;
+            const size = radius * 2; // Match sprite scale logic
+            ctx.drawImage(texture.img, currentX - size / 2, dropY - size / 2, size, size);
+            ctx.restore();
+        } else {
+            // Fallback
+            ctx.beginPath();
+            ctx.arc(currentX, dropY, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = fruit.color;
+            ctx.globalAlpha = 0.5;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
 
         // Draw drop line
         ctx.beginPath();

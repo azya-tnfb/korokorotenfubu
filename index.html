@@ -1,28 +1,210 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>10.ころころてんふぶ</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <div id="game-container">
-        <!-- Canvas will be injected here by Matter.js or manually -->
+    <!-- スプラッシュスクリーン -->
+    <div id="splash-screen">
+        <img src="assets/title/title1_start.png" alt="Title" id="splash-image">
     </div>
-    <div id="ui-layer">
-        <div id="score-display">0</div>
-        <div id="next-fruit-display">
-            <span>Next:</span>
-            <div id="next-fruit-preview"></div>
+
+    <!-- メインメニュー画面 -->
+    <div id="title-menu-screen" class="hidden">
+        <div id="title-menu-buttons">
+            <!-- 上段: スタート、対戦、カスタマイズ -->
+            <div class="menu-row">
+                <button class="title-btn" id="start-btn">スタート</button>
+                <button class="title-btn" id="battle-btn">対戦</button>
+                <button class="title-btn" id="customize-btn">カスタマイズ</button>
+            </div>
+            <!-- 下段: ハイスコア、オプション -->
+            <div class="menu-row">
+                <button class="title-btn" id="highscore-btn">ハイスコア</button>
+                <button class="title-btn" id="options-btn">オプション</button>
+            </div>
         </div>
-        <div id="game-over-screen" class="hidden">
-            <h1>Game Over</h1>
-            <button id="restart-btn">もう一度</button>
+    </div>
+
+    <!-- オプション画面（タイトル画面用） -->
+    <div id="options-screen" class="hidden overlay-screen overlay-center">
+        <div class="game-over-modal">
+            <h2 class="game-over-title">OPTIONS</h2>
+            <div class="pause-options">
+                <div class="option-item">
+                    <label>BGM</label>
+                    <input type="range" id="title-bgm-volume" min="0" max="100" value="30">
+                </div>
+                <div class="option-item">
+                    <label>SE</label>
+                    <input type="range" id="title-se-volume" min="0" max="100" value="50">
+                </div>
+                <button id="options-back-btn" style="margin-top:20px;">戻る</button>
+            </div>
         </div>
+    </div>
+
+    <!-- ハイスコア画面（タイトル画面用） -->
+    <div id="highscore-screen" class="hidden overlay-screen overlay-center">
+        <div class="game-over-modal">
+            <h2 class="game-over-title">RANKING</h2>
+            <div class="game-over-body">
+                <!-- 左側：ハイスコア（1位） -->
+                <div class="game-over-left">
+                    <div class="highscore-display">
+                        <p class="highscore-label">🏆 ハイスコア</p>
+                        <p class="highscore-value" id="menu-highscore">0</p>
+                    </div>
+                </div>
+
+                <!-- 右側：ランキングリスト -->
+                <div class="game-over-right">
+                    <div class="ranking-section">
+                        <div class="rank-item">
+                            <span class="rank-number">🥇 1位</span>
+                            <span class="rank-score" id="menu-rank-1">0</span>
+                        </div>
+                        <div class="rank-item">
+                            <span class="rank-number">🥈 2位</span>
+                            <span class="rank-score" id="menu-rank-2">0</span>
+                        </div>
+                        <div class="rank-item">
+                            <span class="rank-number">🥉 3位</span>
+                            <span class="rank-score" id="menu-rank-3">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="highscore-back-btn" style="margin-top:10px;">戻る</button>
+        </div>
+    </div>
+
+    <!-- カスタマイズ画面 -->
+    <div id="customize-screen" class="hidden overlay-screen overlay-center">
+        <div class="customize-modal">
+            <h2 class="game-over-title">🎨 カスタマイズ</h2>
+
+            <!-- 現在のデッキ -->
+            <div class="deck-section">
+                <h3 class="section-title">📦 現在のデッキ（進化順）</h3>
+                <p class="section-desc">ドラッグで順番入れ替え</p>
+                <div id="current-deck" class="deck-area">
+                    <!-- JSで動的に生成 -->
+                </div>
+            </div>
+
+            <!-- ボールプール -->
+            <div class="pool-section">
+                <h3 class="section-title">🎱 ボールプール</h3>
+                <p class="section-desc">ドラッグしてデッキへドロップで入れ替え</p>
+                <div id="ball-pool" class="pool-area">
+                    <!-- JSで動的に生成 -->
+                </div>
+            </div>
+
+            <div class="customize-buttons">
+                <button id="customize-save-btn">💾 保存</button>
+                <button id="customize-reset-btn">🔄 リセット</button>
+                <button id="customize-back-btn">戻る</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-container" class="hidden">
+        <div id="canvas-wrapper">
+            <!-- Canvas will be injected here by Matter.js -->
+        </div>
+
+        <!-- カウントダウン表示 -->
+        <div id="countdown-display" class="hidden">3</div>
+
+        <div id="ui-layer">
+            <div id="score-container">
+                <div class="score-label">SCORE</div>
+                <div id="score-display">0</div>
+            </div>
+            <div id="next-fruit-display">
+                <span>Next:</span>
+                <div id="next-fruit-preview"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 進化ルート表示欄 -->
+    <div id="evolution-container">
+        <h3>進化ルート</h3>
+        <div id="evolution-list"></div>
+    </div>
+
+    <!-- 設定ボタン（歯車） -->
+    <button id="settings-btn" class="icon-btn">⚙️</button>
+
+    <!-- ポーズメニュー（設定画面） -->
+    <div id="pause-menu" class="hidden">
+        <h2>設定</h2>
+        <div class="pause-options">
+            <div class="option-item">
+                <label>BGM</label>
+                <input type="range" id="pause-bgm-volume" min="0" max="100" value="30">
+            </div>
+            <div class="option-item">
+                <label>SE</label>
+                <input type="range" id="pause-se-volume" min="0" max="100" value="50">
+            </div>
+            <button id="pause-retry-btn">リトライ</button>
+            <button id="pause-title-btn">メインメニュー</button>
+            <button id="pause-close-btn">閉じる</button>
+        </div>
+    </div>
+
+    <div id="game-over-screen" class="hidden overlay-screen">
+        <div class="game-over-modal">
+            <h1 class="game-over-title">GAME OVER</h1>
+
+            <!-- 横並び用コンテナ -->
+            <div class="game-over-body">
+                <!-- 左側：今回のスコア -->
+                <div class="game-over-left">
+                    <div class="highscore-display">
+                        <p class="highscore-label">📊 今回のスコア</p>
+                        <p class="highscore-value" id="current-score-display">0</p>
+                    </div>
+                </div>
+
+                <!-- 右側：ランキング -->
+                <div class="game-over-right">
+                    <div class="ranking-section">
+                        <div class="rank-item">
+                            <span class="rank-number">🥇 1位</span>
+                            <span class="rank-score" id="rank-1">0</span>
+                        </div>
+                        <div class="rank-item">
+                            <span class="rank-number">🥈 2位</span>
+                            <span class="rank-score" id="rank-2">0</span>
+                        </div>
+                        <div class="rank-item">
+                            <span class="rank-number">🥉 3位</span>
+                            <span class="rank-score" id="rank-3">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-over-buttons">
+                <button id="restart-btn">リトライ</button>
+                <button id="back-to-title-btn">タイトルに戻る</button>
+            </div>
+        </div>
+    </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script type="module" src="main.js"></script>
 </body>
+
 </html>
