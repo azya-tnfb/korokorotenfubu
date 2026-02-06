@@ -59,7 +59,8 @@ canvas {
 }
 
 #ui-layer {
-    position: absolute;
+    position: fixed;
+    /* absolute -> fixed (Viewport基準) */
     top: 100px;
     /* User Request: 100,100 */
     left: 100px;
@@ -180,7 +181,8 @@ input[type=range] {
 
 /* 進化ルート表示 - 1100,250を中心に配置 */
 #evolution-container {
-    position: absolute;
+    position: fixed;
+    /* absolute -> fixed */
     top: 250px;
     left: 1100px;
     transform: translate(-50%, -50%);
@@ -693,7 +695,8 @@ button:active {
 
 /* 設定ボタン（歯車） - 1250, 100 に配置 */
 #settings-btn {
-    position: absolute;
+    position: fixed;
+    /* absolute -> fixed */
     top: 100px;
     left: 1250px;
     /* User Request */
@@ -1112,7 +1115,7 @@ button:active {
 /* デバッグ用グリッド (全体基準) */
 #debug-grid {
     position: fixed;
-    /* 全体基準に戻す */
+    /* fixedでウィンドウ全体基準 */
     top: 0;
     left: 0;
     width: 100vw;
