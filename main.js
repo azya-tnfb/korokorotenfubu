@@ -389,6 +389,24 @@ function initEvolutionChart() {
 
         listEl.appendChild(item);
     });
+
+    // 中央に最終進化を大きく表示
+    const finalFruit = FRUITS[FRUITS.length - 1];
+    const centerItem = document.createElement('div');
+    centerItem.className = 'evo-item evo-final';
+    centerItem.style.left = `${centerX}px`;
+    centerItem.style.top = `${centerY}px`;
+
+    const centerImg = document.createElement('img');
+    if (finalFruit.textures.length > 0) {
+        centerImg.src = finalFruit.textures[0];
+    }
+    centerImg.className = 'evo-img';
+    centerImg.alt = finalFruit.label;
+    centerImg.title = `最終進化: ${finalFruit.label}`;
+
+    centerItem.appendChild(centerImg);
+    listEl.appendChild(centerItem);
 }
 initEvolutionChart();
 
