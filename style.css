@@ -142,14 +142,14 @@ input[type=range] {
 }
 
 #score-display {
-    position: fixed;
-    top: 15%;
-    left: calc(8% + 100px);
-    font-size: 2rem;
+    /* position: fixed を削除してコンテナ内に配置 */
+    font-size: 2.5rem;
     font-weight: bold;
-    color: var(--text-color);
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    z-index: 2500;
+    color: #ffffff;
+    /* 白文字 */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin-top: 5px;
+    z-index: 2501;
 }
 
 #next-fruit-display {
@@ -641,9 +641,12 @@ button:active {
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* 中央揃え */
+    justify-content: center;
     background: rgba(135, 206, 235, 0.6);
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 15px 30px;
+    /* パディング調整 */
+    border-radius: 12px;
     backdrop-filter: blur(5px);
     position: fixed;
     top: 15%;
@@ -655,11 +658,13 @@ button:active {
 
 .score-label {
     font-size: 1rem;
-    font-weight: normal;
-    color: #ffffff;
+    color: rgba(255, 255, 255, 0.9);
+    /* 少し薄い白 */
     font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-    margin-bottom: 5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    margin-bottom: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 #score-display {
