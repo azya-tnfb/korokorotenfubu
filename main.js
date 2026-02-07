@@ -241,6 +241,32 @@ document.getElementById('pause-title-btn').addEventListener('click', () => {
     document.getElementById('evolution-container').classList.add('hidden');
     document.getElementById('settings-btn').classList.add('hidden');
     titleMenuScreen.classList.remove('hidden');
+
+    // ズーム調整ヒントの表示制御
+    const zoomHint = document.getElementById('zoom-hint');
+    const zoomCheck = document.getElementById('zoom-hint-check');
+
+    // スマホ判定（簡易的）
+    const isMobile = window.innerWidth <= 768;
+
+    if (zoomHint && !localStorage.getItem('hideZoomHint') && !isMobile) {
+        zoomHint.style.display = 'block'; // classList.remove('hidden') ではなく直接 style.display を操作（style.cssで display: none なので）
+
+        // チェックボックスイベント
+        if (zoomCheck) {
+            zoomCheck.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    localStorage.setItem('hideZoomHint', 'true');
+                    // フェードアウトさせて消す
+                    zoomHint.style.transition = 'opacity 0.5s';
+                    zoomHint.style.opacity = '0';
+                    setTimeout(() => {
+                        zoomHint.style.display = 'none';
+                    }, 500);
+                }
+            });
+        }
+    }
 });
 
 // ポーズメニューの音量調整
