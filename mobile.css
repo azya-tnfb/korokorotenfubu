@@ -3,20 +3,29 @@
    ========================================= */
 @media (max-width: 768px) {
 
+    /* スクロール禁止 */
+    html,
+    body {
+        overflow: hidden;
+        height: 100%;
+        height: 100dvh;
+    }
+
     /* ゲームコンテナ: 画面に合わせて縮小 */
     #game-container {
-        /* width: 400px なので、画面幅がそれより小さい場合は縮小 */
         max-width: 85vw;
+        max-height: 85vh;
+        max-height: 85dvh;
+        width: auto;
         height: auto;
         aspect-ratio: 400 / 515;
-        /* 中央配置は維持 */
     }
 
     /* Canvasラッパーもそれに合わせる */
     #canvas-wrapper {
         width: 100%;
         height: 100%;
-        /* transformを削除して背景と内容を一致させる */
+        background-size: 100% 100%;
     }
 
     /* SCORE: 左上へ */
