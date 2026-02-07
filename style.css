@@ -1058,15 +1058,16 @@ button:active {
 
 /* ボールプールエリア */
 .pool-area {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
     padding: 10px;
     background: linear-gradient(135deg, #E8F4FD 0%, #F0F8FF 100%);
     border: 2px dashed #87CEEB;
     border-radius: 12px;
-    min-height: 60px;
-    justify-content: center;
+    min-height: 120px;
+    /* 2列入る高さ確保 */
+    justify-items: center;
     align-items: center;
 }
 
