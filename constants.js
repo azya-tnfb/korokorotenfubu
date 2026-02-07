@@ -109,6 +109,16 @@ export const FRUITS = [
             'assets/ball/senka/senka02.png'
         ]
     },            // 11: スイカ
+    {
+        label: 'シア',
+        radius: 9.5,
+        color: '#FF1493',
+        score: 78,
+        textures: [
+            'assets/ball/shia/shia01.png',
+            'assets/ball/shia/shia02.png'
+        ]
+    },            // 12: 最終進化
 ];
 
 // 物理演算設定
