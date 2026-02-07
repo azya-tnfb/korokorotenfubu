@@ -124,6 +124,6 @@ export const GAME_SETTINGS = {
     HEIGHT: 500,         // 箱の高さ
     WALL_THICKNESS: 10,  // 壁の厚さ
     BASE_RADIUS_SCALE: 15, // 1.0 radius = 15px（箱サイズに合わせて調整）
-    GAME_OVER_LINE_Y: 80, // ゲームオーバーラインの位置
+    GAME_OVER_LINE_Y: 60, // ゲームオーバーラインの位置 (80 -> 60)
     GAME_OVER_DURATION_MS: 3000, // 3 seconds
 };
