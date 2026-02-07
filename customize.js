@@ -56,6 +56,7 @@ class CustomizeManager {
         this.draggedIndex = -1;
         this.dragSource = null; // 'deck' or 'pool'
         this.draggedPoolId = null;
+        this.selectedItem = null; // { source: 'deck'|'pool', id: string, index: number }
     }
 
     // LocalStorageから進化順を読み込み
@@ -166,6 +167,13 @@ class CustomizeManager {
             item.addEventListener('drop', (e) => this.handleDeckDrop(e, index));
             item.addEventListener('dragend', () => this.handleDragEnd());
 
+            // クリックイベント（スマホ用）
+            item.addEventListener('click', () => this.handleItemClick('deck', id, index));
+
+            if (this.selectedItem && this.selectedItem.source === 'deck' && this.selectedItem.index === index) {
+                item.classList.add('selected');
+            }
+
             container.appendChild(item);
         });
     }
@@ -206,6 +214,13 @@ class CustomizeManager {
             // ドラッグイベント（プールからデッキへ）
             item.addEventListener('dragstart', (e) => this.handlePoolDragStart(e, ball.id));
             item.addEventListener('dragend', () => this.handleDragEnd());
+
+            // クリックイベント（スマホ用）
+            item.addEventListener('click', () => this.handleItemClick('pool', ball.id, -1));
+
+            if (this.selectedItem && this.selectedItem.source === 'pool' && this.selectedItem.id === ball.id) {
+                item.classList.add('selected');
+            }
 
             container.appendChild(item);
         });
@@ -282,6 +297,52 @@ class CustomizeManager {
         this.draggedIndex = -1;
         this.dragSource = null;
         this.draggedPoolId = null;
+    }
+
+    // アイテムクリックハンドラ（スマホ対応）
+    handleItemClick(source, id, index) {
+        // 同じアイテムをクリックしたら選択解除
+        if (this.selectedItem &&
+            this.selectedItem.source === source &&
+            this.selectedItem.id === id &&
+            (source === 'pool' || this.selectedItem.index === index)) {
+
+            this.selectedItem = null;
+            this.renderDeck();
+            this.renderPool();
+            return;
+        }
+
+        if (!this.selectedItem) {
+            // 新規選択
+            this.selectedItem = { source, id, index };
+        } else {
+            // すでに何か選択されている場合 -> アクション実行
+            // Case 1: Deck -> Deck (Swap)
+            if (this.selectedItem.source === 'deck' && source === 'deck') {
+                this.swapInDeck(this.selectedItem.index, index);
+                this.selectedItem = null; // 完了したら解除
+            }
+            // Case 2: Pool -> Deck (Replace)
+            else if (this.selectedItem.source === 'pool' && source === 'deck') {
+                this.swapBallWithPool(index, this.selectedItem.id);
+                this.selectedItem = null;
+            }
+            // Case 3: Deck -> Pool (Replace, same as Pool -> Deck)
+            else if (this.selectedItem.source === 'deck' && source === 'pool') {
+                // デッキのアイテムを、クリックしたプールのアイテムで置き換えるのが自然？
+                // あるいは「このデッキのスロットに、このプールアイテムを入れる」
+                // ここでは「デッキ選択中にプールをクリック」= 「そのプールアイテムをデッキに入れる」
+                this.swapBallWithPool(this.selectedItem.index, id);
+                this.selectedItem = null;
+            }
+            // Case 4: Pool -> Pool (Change selection)
+            else {
+                this.selectedItem = { source, id, index };
+            }
+        }
+        this.renderDeck();
+        this.renderPool();
     }
 }
 

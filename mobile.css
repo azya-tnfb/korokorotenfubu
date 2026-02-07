@@ -109,3 +109,12 @@
         height: 25px;
     }
 }
+
+/* 追加: 選択状態のスタイル (全デバイス共通) */
+.deck-item.selected,
+.pool-item.selected {
+    border-color: #FF0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+    background-color: #FFF0F0;
+    transform: scale(1.1);
+}
