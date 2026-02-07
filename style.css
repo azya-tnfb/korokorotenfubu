@@ -38,7 +38,7 @@ body {
     position: relative;
     width: 400px;
     /* Match GAME_SETTINGS.WIDTH */
-    height: 500px;
+    height: 515px;
     /* Match GAME_SETTINGS.HEIGHT */
     background-image: url('assets/bg/bg01.png');
     background-size: cover;

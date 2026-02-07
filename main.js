@@ -419,7 +419,7 @@ initEvolutionChart();
 
 // Input Handling
 let currentX = GAME_SETTINGS.WIDTH / 2;
-const dropY = 20; // Height where fruit spawns (50 -> 20)
+const dropY = 50; // Height where fruit spawns
 
 // Helper to create fruit body
 function createFruitBody(x, y, idx, isStatic = false) {
@@ -657,7 +657,7 @@ Events.on(engine, 'afterUpdate', () => {
         if (body.isStatic) continue;
         if (body.label.startsWith('fruit_')) {
             // Ignore young bodies (prevent game over on spawn)
-            if (Date.now() - (body.plugin.born || 0) < 2000) continue;
+            if (Date.now() - (body.plugin.born || 0) < 1000) continue;
 
             // Check position (Y-axis is 0 at top)
             if (body.position.y - body.circleRadius < GAME_SETTINGS.GAME_OVER_LINE_Y) {

@@ -121,9 +121,9 @@ export const PHYSICS_SETTINGS = {
 
 export const GAME_SETTINGS = {
     WIDTH: 400,          // 箱の幅（380 -> 400に変更）
-    HEIGHT: 500,         // 箱の高さ
+    HEIGHT: 515,         // 箱の高さ (500 -> 515)
     WALL_THICKNESS: 10,  // 壁の厚さ
     BASE_RADIUS_SCALE: 15, // 1.0 radius = 15px（箱サイズに合わせて調整）
-    GAME_OVER_LINE_Y: 45, // ゲームオーバーラインの位置 (50 -> 45)
+    GAME_OVER_LINE_Y: 60, // ゲームオーバーラインの位置 (45 -> 15px下げて60)
     GAME_OVER_DURATION_MS: 3000, // 3 seconds
 };
